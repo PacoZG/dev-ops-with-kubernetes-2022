@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dowk-22-ping-pong-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-pong-app
+  template:
+    metadata:
+      labels:
+        app: ping-pong-app
+    spec:
+      containers:
+        - name: ping-pong-app
+          image: jeknom/dowk-22-ping-pong-app:0.1
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dowk-22-ping-pong-app-svc
+spec:
+  type: ClusterIP
+  selector:
+    app: ping-pong-app
+  ports:
+    - port: 2401
+      protocol: TCP
+      targetPort: 3000
