@@ -1,0 +1,12 @@
+{
+  "name": "log-writer",
+  "version": "0.1",
+  "description": "An app for the DevOps with Kubernetes course",
+  "main": "index.js",
+  "author": "Johannes Palvanen",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "private": true
+}
