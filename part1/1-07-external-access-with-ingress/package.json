@@ -1,0 +1,15 @@
+{
+  "name": "log-output",
+  "version": "0.2",
+  "description": "Course task for DevOps with Kubernetes",
+  "main": "log-output.js",
+  "author": "Johannes Palvanen",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node log-output.js"
+  },
+  "dependencies": {
+    "express": "^4.18.1"
+  }
+}
