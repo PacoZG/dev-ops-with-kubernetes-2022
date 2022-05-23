@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-writer-and-reader
+  template:
+    metadata:
+      labels:
+        app: logger-writer-and-reader
+    spec:
+      volumes:
+        - name: shared-log
+          persistentVolumeClaim:
+            claimName: logger-ping-pong-claim
+      containers:
+        - name: log-reader
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          image: jeknom/dowk-log-reader-app:0.2
+          volumeMounts:
+          - name: shared-log
+            mountPath: /usr/src/app/files
+          env:
+            - name: READ_PATH
+              value: /usr/src/app/files/log.txt
+            - name: PONG_FILE_PATH
+              value: /usr/src/app/files/pingpongs.txt
+        - name: log-writer
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          image: jeknom/dowk-log-writer-app:0.2
+          volumeMounts:
+          - name: shared-log
+            mountPath: /usr/src/app/files
+          env:
+            - name: WRITE_PATH
+              value: /usr/src/app/files/log.txt
