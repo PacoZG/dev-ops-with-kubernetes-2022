@@ -1,0 +1,97 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Todo app</title>
+    <meta name="description" content="A todo app made as a part of the DevOps with Kubernetes course.">
+
+    <meta property="og:title" content="Todo app">
+    <meta property="og:type" content="website">
+    <meta property="og:description" content="A todo app made as a part of the DevOps with Kubernetes course.">
+  </head>
+  <body>
+    <h1>Todo app</h1>
+    <p>Here is a daily image for no particular reason</p>
+    <img src="/daily-pic.jpg" alt="Daily image" width="500" height="500" />
+    <p>Your TODOS:</p>
+    <form id="todo-form">
+      <input id="todo-input" type="text" placeholder="Your todo" />
+      <button id="todo-submit">Submit</button>
+    </form>
+    <ul id="todo-list"></ul>
+    <script>
+      function removeAllChildNodes(parent) {
+        while (parent.firstChild) {
+          parent.removeChild(parent.firstChild);
+        }
+      }
+
+      async function postTodoAndRefresh(message) {
+        await fetch('/todos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        });
+
+        await fetchAndRenderTodos();
+      }
+
+      async function fetchAndRenderTodos() {
+        const response = await fetch('/todos');
+        const todos = await response.json();
+
+        const listElement = document.getElementById('todo-list');
+        removeAllChildNodes(listElement);
+        todos.forEach(todo => {
+          const listItemElement = document.createElement('li');
+          listItemElement.innerText = todo.message;
+          listElement.appendChild(listItemElement);
+        })
+      }
+
+      function initializeForm() {
+        const formElement = document.getElementById('todo-form');
+        const submitButtonElement = document.getElementById('todo-submit');
+        const formInput = document.getElementById('todo-input');
+        
+        const handlePost = () => {
+          const inputElement = document.getElementById('todo-input');
+          const inputValue = inputElement.value;
+          
+          if (inputValue && inputValue.length <= 140) {
+            postTodoAndRefresh(inputValue);
+            inputElement.value = "";
+          }
+        }
+        
+        formElement.onsubmit = (event) => {
+          event.preventDefault();
+          handlePost();
+        }
+
+        submitButtonElement.onclick = (event) => {
+          event.preventDefault();
+          handlePost();
+        }
+
+        formInput.oninput = (event) => {
+          const newValue = event.target.value;
+          if (newValue.length <= 140) {
+            formInput.value = newValue;
+            submitButtonElement.disabled = false;
+          } else {
+            submitButtonElement.disabled = true;
+          }
+        }
+      }
+      
+      initializeForm();
+      fetchAndRenderTodos();
+    </script>
+  </body>
+</html>
