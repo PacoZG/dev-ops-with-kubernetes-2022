@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dowk-22-todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      volumes:
+          - name: todo-files
+            persistentVolumeClaim:
+              claimName: todo-claim
+      containers:
+        - name: todo-app
+          imagePullPolicy: Always
+          image: jeknom/dowk-22-todo-app:0.6
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: todo-files
+              mountPath: /server/public
+          env:
+            - name: VERSION
+              value: '0.6'
