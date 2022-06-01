@@ -1,0 +1,15 @@
+{
+  "name": "ping-pong-app",
+  "version": "0.3",
+  "description": "App done for the DevOps with Kubernetes course",
+  "main": "index.js",
+  "author": "Johannes Palvanen",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.1"
+  }
+}

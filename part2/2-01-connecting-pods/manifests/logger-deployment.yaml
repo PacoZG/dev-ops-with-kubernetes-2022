@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-writer-and-reader
+  template:
+    metadata:
+      labels:
+        app: logger-writer-and-reader
+    spec:
+      containers:
+        - name: log-reader
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          image: jeknom/dowk-log-reader-app:0.3
+          env:
+            - name: PORT
+              value: "3000"
+            - name: LOG_SERVER_URL
+              value: http://localhost:8600/logs
+            - name: PING_PONG_SERVER_URL
+              value: http://pong/pingpong
+        - name: log-writer
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          image: jeknom/dowk-log-writer-app:0.3
+          env:
+            - name: PORT
+              value: "8600"
