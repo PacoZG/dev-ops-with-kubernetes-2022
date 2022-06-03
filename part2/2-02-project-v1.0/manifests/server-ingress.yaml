@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-server-ingress
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /todos
+        pathType: Exact
+        backend:
+          service:
+            name: todo-server-svc
+            port:
+              number: 2600
+      - path: /daily-pic
+        pathType: Exact
+        backend:
+          service:
+            name: todo-server-svc
+            port:
+              number: 2600

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dowk-22-todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+        - name: client
+          imagePullPolicy: Always
+          image: jeknom/dowk-22-todo-client:1.0
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+        - name: server
+          imagePullPolicy: Always
+          image: jeknom/dowk-22-todo-server:1.0
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: CLIENT_URL
+              value: http://localhost:8081
