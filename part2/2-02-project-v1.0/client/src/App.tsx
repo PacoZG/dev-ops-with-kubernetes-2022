@@ -64,6 +64,10 @@ function App() {
   };
 
   const handleAddTodo = () => {
+    if (todo === "") {
+      return;
+    }
+
     todosMutation.mutate(
       { message: todo },
       { onSuccess: () => todos.refetch() }
@@ -99,7 +103,7 @@ function App() {
             label="New entry"
             placeholder="Take out the trash!"
             rightSection={
-              <ActionIcon>
+              <ActionIcon onClick={handleAddTodo} disabled={todo === ""}>
                 <Plus />
               </ActionIcon>
             }
