@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-client-svc
+  namespace: dowk-22-todo
+spec:
+  type: ClusterIP
+  selector:
+    app: todo-app
+  ports:
+    - name: client
+      port: 2456
+      protocol: TCP
+      targetPort: 3000
