@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dowk-22-logger-app-svc
+  namespace: dowk-22
+spec:
+  type: ClusterIP
+  selector:
+    app: logger-writer-and-reader
+  ports:
+    - port: 2401
+      protocol: TCP
+      targetPort: 3000

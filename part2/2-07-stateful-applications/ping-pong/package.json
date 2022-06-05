@@ -1,0 +1,19 @@
+{
+  "name": "ping-pong-app",
+  "version": "0.4.0",
+  "description": "App done for the DevOps with Kubernetes course",
+  "main": "index.js",
+  "author": "Johannes Palvanen",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "3.14.0",
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "prisma": "^3.14.0"
+  }
+}

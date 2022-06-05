@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pong
+  namespace: dowk-22
+spec:
+  type: ClusterIP
+  selector:
+    app: ping-pong-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 3000
