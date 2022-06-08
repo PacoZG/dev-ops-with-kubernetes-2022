@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-todo-cron-job
+  namespace: dowk-22-todo
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: daily-todo-job
+            image: jeknom/dowk-daily-todo-job:0.1
+            imagePullPolicy: IfNotPresent
+            env:
+              - name: SERVER_URL
+                value: todo-server-svc:2600
+          restartPolicy: Never
