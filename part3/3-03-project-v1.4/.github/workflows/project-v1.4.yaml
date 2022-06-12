@@ -1,0 +1,49 @@
+name: project-1.4
+
+env:
+  PROJECT_ID: ${{ secrets.GKE_PROJECT }}
+  GKE_CLUSTER: dwk-gke
+  GKE_ZONE: europe-north1-b
+  CLIENT_IMAGE: todo-client
+  SERVER_IMAGE: todo-server
+  VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
+
+on:
+  push:
+    branches:
+      - "project-1.04"
+
+jobs:
+  build-publish-deploy:
+    name: Build, Publish and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.GKE_PROJECT }}
+          service_account_key: ${{ secrets.GKE_SA_KEY }}
+          export_default_credentials: true
+      - run: gcloud --quiet auth configure-docker
+      - run: gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+      - name: Build Client
+        run: docker build --build-arg=VITE_SERVER_URL=$VITE_SERVER_URL -t "gcr.io/$PROJECT_ID/$CLIENT_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA" ./part3/3-03-project-v1.4/client
+      - name: Build Server
+        run: docker build -t "gcr.io/$PROJECT_ID/$SERVER_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA" ./part3/3-03-project-v1.4/server
+      - name: Publish Client
+        run: docker push "gcr.io/$PROJECT_ID/$CLIENT_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA"
+      - name: Publish Server
+        run: docker push "gcr.io/$PROJECT_ID/$SERVER_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA"
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v1
+      - name: Deploy
+        run: |-
+          cd ./part3/3-03-project-v1.4
+          kustomize edit set image CLIENT_IMAGE=gcr.io/$PROJECT_ID/$CLIENT_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA
+          kustomize edit set image SERVER_IMAGE=gcr.io/$PROJECT_ID/$SERVER_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA
+          kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment -n dowk-22-todo todo-dep
+          kubectl get services -n dowk-22-todo -o wide
