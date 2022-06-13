@@ -15,3 +15,7 @@ Run `gcloud container clusters create <YOUR_CLUSTER_NAME> --zone=europe-north1-b
 # Remove cluster
 
 Run `gcloud container clusters delete <YOUR_CLUSTER_NAME> --zone=europe-north1-b`
+
+# Update cluster to autoscale
+
+Run `gcloud container clusters update dwk-cluster --zone=europe-north1-b --enable-autoscaling --min-nodes=1 --max-nodes=5`
