@@ -8,8 +8,8 @@ env:
   SERVER_IMAGE: todo-server
   VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
 
-# on:
-#   push:
+on:
+  push:
 
 jobs:
   build-publish-deploy:
@@ -44,8 +44,8 @@ jobs:
           kustomize edit set namespace ${GITHUB_REF#refs/heads/}
           kustomize edit set image CLIENT_IMAGE=gcr.io/$PROJECT_ID/$CLIENT_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA
           kustomize edit set image SERVER_IMAGE=gcr.io/$PROJECT_ID/$SERVER_IMAGE:${GITHUB_REF#refs/heads/}-$GITHUB_SHA
-          kubectl create secret generic todo-secret -n=${GITHUB_REF#refs/heads/} --from-literal=DATABASE_URL=${{ secrets.DATABASE_URL }}
-          kubectl create secret generic database-secret -n=${GITHUB_REF#refs/heads/} --from-literal=POSTGRES_USER=${{ secrets.POSTGRES_USER }} --from-literal=POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          kubectl create secret generic todo-secret -n=${GITHUB_REF#refs/heads/} --from-literal=DATABASE_URL=${{ secrets.DATABASE_URL }} || true
+          kubectl create secret generic database-secret -n=${GITHUB_REF#refs/heads/} --from-literal=POSTGRES_USER=${{ secrets.POSTGRES_USER }} --from-literal=POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} || true
           kustomize build . | kubectl apply -f -
           kubectl config set-context --current --namespace=${GITHUB_REF#refs/heads/}
           kubectl rollout status deployment todo-dep

@@ -8,10 +8,8 @@ env:
   SERVER_IMAGE: todo-server
   VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
 
-# on:
-#   push:
-#     branches:
-#       - "project-1.04"
+on:
+  push:
 
 jobs:
   build-publish-deploy:
