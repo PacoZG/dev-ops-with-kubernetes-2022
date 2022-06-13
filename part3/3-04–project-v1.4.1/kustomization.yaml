@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+  - name: CLIENT_IMAGE
+    newName: jeknom/dowk-22-todo-client:1.4
+  - name: SERVER_IMAGE
+    newName: jeknom/dowk-22-todo-server:1.4
+resources:
+  - manifests/database.yaml
+  - manifests/todo-app.yaml
