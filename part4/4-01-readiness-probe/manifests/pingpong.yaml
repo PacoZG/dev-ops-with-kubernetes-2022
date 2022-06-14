@@ -1,0 +1,52 @@
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: pingpong-svc
+  namespace: dowk-22
+spec:
+  type: NodePort
+  selector:
+    app: ping-pong-app
+  ports:
+    - name: http
+      port: 2333
+      protocol: TCP
+      targetPort: 3000
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ping-pong-dep
+  namespace: dowk-22
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ping-pong-app
+  template:
+    metadata:
+      labels:
+        app: ping-pong-app
+    spec:
+      containers:
+        - name: ping-pong
+          imagePullPolicy: Always
+          image: jeknom/dowk-22-ping-pong-app:0.6
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            httpGet:
+              path: /ready
+              port: 3000
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+          envFrom:
+            - secretRef:
+                name: ping-pong-secret
+          env:
+            - name: PORT
+              value: "3000"

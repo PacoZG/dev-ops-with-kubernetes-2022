@@ -1,0 +1,76 @@
+# CONFIG
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logger-config
+  namespace: dowk-22
+data:
+  MESSAGE: Hello
+
+---
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: logger-svc
+  namespace: dowk-22
+spec:
+  type: NodePort
+  selector:
+    app: logger-writer-and-reader
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logger-dep
+  namespace: dowk-22
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logger-writer-and-reader
+  template:
+    metadata:
+      labels:
+        app: logger-writer-and-reader
+    spec:
+      containers:
+        - name: log-reader
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          image: jeknom/dowk-log-reader-app:0.4
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            httpGet:
+              path: /ready
+              port: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: LOG_SERVER_URL
+              value: http://localhost:8600/logs
+            - name: PING_PONG_SERVER_URL
+              value: http://pingpong-svc:2333/pingpong
+        - name: log-writer
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: logger-config
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "250m"
+          image: jeknom/dowk-log-writer-app:0.4
+          env:
+            - name: PORT
+              value: "8600"
