@@ -30,6 +30,7 @@ const handleReadinessCheck = async (req, res) => {
       res.status(200).send("Receiving all the necessary data!");
     }
   } catch (error) {
+    res.status(500).send("Failed to request readiness!");
     console.error(error);
   }
 };
