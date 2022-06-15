@@ -24,7 +24,7 @@ metadata:
   name: todo-svc
   namespace: dowk-22-todo
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: todo-app
   ports:
@@ -69,16 +69,44 @@ spec:
             port:
               number: 2333
 ---
-# DEPLOYMENT
-apiVersion: apps/v1
-kind: Deployment
+# ANALYSIS TEMPLATE
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: cpu-usage
+  namespace: dowk-22-todo
+spec:
+  metrics:
+  - name: cpu-usage
+    initialDelay: 3m
+    successCondition: result < 0.5
+    provider:
+      prometheus:
+        address: http://kube-prometheus-stack-1654-prometheus.prometheus:9090
+        query: scalar(sum(rate (container_cpu_usage_seconds_total{namespace="dowk-22-todo"}[1m])) / sum(machine_cpu_cores) * 100)
+---
+# ROLLOUT
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: todo-dep
   namespace: dowk-22-todo
   labels:
     app: todo-app
 spec:
-  replicas: 1
+  strategy:
+    canary:
+      steps:
+      - setWeight: 25
+      - pause: { duration: 10s }
+      - setWeight: 50
+      - pause: { duration: 10s }
+      - setWeight: 75
+      - pause: { duration: 10s }
+      - analysis:
+          templates:
+          - templateName: cpu-usage
+  replicas: 4
   selector:
     matchLabels:
       app: todo-app
@@ -95,9 +123,6 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "100m"
-          envFrom:
-            - configMapRef:
-                name: client-config
           readinessProbe:
             initialDelaySeconds: 60
             periodSeconds: 5
@@ -110,6 +135,9 @@ spec:
             httpGet:
                path: /
                port: 3000
+          envFrom:
+            - configMapRef:
+                name: client-config
         - name: server
           imagePullPolicy: Always
           image: SERVER_IMAGE
