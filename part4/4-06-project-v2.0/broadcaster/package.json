@@ -1,0 +1,16 @@
+{
+  "name": "broadcaster",
+  "version": "0.0.1",
+  "description": "Broadcast messages to a messaging app",
+  "main": "server.js",
+  "author": "Johannes Palvanen",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "discord.js": "^13.8.0",
+    "nats": "^2.7.1"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
