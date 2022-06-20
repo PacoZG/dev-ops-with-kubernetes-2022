@@ -1,0 +1,202 @@
+# CLIENT CONFIG
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: client-config
+  namespace: dowk-22-todo
+data:
+  VITE_SERVER_URL: http://localhost:8081
+---
+# SERVER CONFIG
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: server-config
+  namespace: dowk-22-todo
+data:
+  CLIENT_URL: http://localhost:3000
+  NATS_SERVER_URL: my-nats.default:4222
+  PORT: "8081"
+---
+# BROADCASTER CONFIG
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: broadcaster-config
+  namespace: dowk-22-todo
+data:
+  NATS_SERVER_URL: my-nats.default:4222
+---
+# TODO APP SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-svc
+  namespace: dowk-22-todo
+spec:
+  type: ClusterIP
+  selector:
+    app: todo-app
+  ports:
+    - name: client
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+    - name: server
+      port: 2333
+      protocol: TCP
+      targetPort: 8081
+---
+# INGRESS
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: todo-ingress
+  namespace: dowk-22-todo
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: todo-svc
+            port:
+              number: 80
+      - path: /todos
+        pathType: Prefix
+        backend:
+          service:
+            name: todo-svc
+            port:
+              number: 2333
+      - path: /daily-pic
+        pathType: Prefix
+        backend:
+          service:
+            name: todo-svc
+            port:
+              number: 2333
+---
+# ANALYSIS TEMPLATE
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: cpu-usage
+  namespace: dowk-22-todo
+spec:
+  metrics:
+  - name: cpu-usage
+    initialDelay: 3m
+    successCondition: result < 0.5
+    provider:
+      prometheus:
+        address: http://kube-prometheus-stack-1654-prometheus.prometheus:9090
+        query: scalar(sum(rate (container_cpu_usage_seconds_total{namespace="dowk-22-todo"}[1m])) / sum(machine_cpu_cores) * 100)
+---
+# ROLLOUT
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: todo-dep
+  namespace: dowk-22-todo
+  labels:
+    app: todo-app
+spec:
+  strategy:
+    canary:
+      steps:
+      - setWeight: 100
+      - pause: { duration: 10s }
+      - analysis:
+          templates:
+          - templateName: cpu-usage
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+        - name: client
+          imagePullPolicy: Always
+          image: CLIENT_IMAGE
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          readinessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            httpGet:
+              path: /ready
+              port: 3000
+          livenessProbe:
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            httpGet:
+               path: /
+               port: 3000
+          envFrom:
+            - configMapRef:
+                name: client-config
+        - name: server
+          imagePullPolicy: Always
+          image: SERVER_IMAGE
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          readinessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            httpGet:
+              path: /ready
+              port: 8081
+          livenessProbe:
+            initialDelaySeconds: 120
+            periodSeconds: 5
+            httpGet:
+               path: /ready
+               port: 8081
+          envFrom:
+            - configMapRef:
+                name: server-config
+            - secretRef:
+                name: todo-secret
+---
+# BROADCASTER DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcaster-dep
+  namespace: dowk-22-todo
+  labels:
+    app: broadcaster-dep
+spec:
+  replicas: 6
+  selector:
+    matchLabels:
+      app: broadcaster-dep
+  template:
+    metadata:
+      labels:
+        app: broadcaster-dep
+    spec:
+      containers:
+        - name: broadcaster
+          imagePullPolicy: Always
+          image: BROADCASTER_IMAGE
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          envFrom:
+            - configMapRef:
+                name: broadcaster-config
+            - secretRef:
+                name: todo-broadcaster-secret
