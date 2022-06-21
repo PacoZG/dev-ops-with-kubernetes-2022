@@ -1,0 +1,17 @@
+{
+  "name": "dummy-site-controller",
+  "version": "0.0.1",
+  "description": "Course app",
+  "main": "index.js",
+  "author": "Johannes Palvanen",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@kubernetes/client-node": "^0.16.3",
+    "axios": "^0.27.2",
+    "express": "^4.18.1"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
