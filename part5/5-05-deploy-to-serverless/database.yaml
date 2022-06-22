@@ -1,0 +1,61 @@
+# CONFIG
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-config
+data:
+  PGDATA: /var/lib/postgresql/data
+---
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-svc
+spec:
+  clusterIP: None
+  selector:
+    app: postgresapp
+  ports:
+    - port: 5432
+      name: web
+---
+# STATEFUL SET
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-ss
+spec:
+  serviceName: postgres-svc
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresapp
+  template:
+    metadata:
+      labels:
+        app: postgresapp
+    spec:
+      containers:
+        - name: postgres
+          image: postgres
+          envFrom:
+            - configMapRef:
+                name: database-config
+            - secretRef:
+                name: database-secret
+          ports:
+            - name: web
+              containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 100Mi
