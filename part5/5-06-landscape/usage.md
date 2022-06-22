@@ -1,0 +1,20 @@
+- PostgreSQL - Used in for the course apps that needed a database, also used in personal projects
+- Redis - Used outside of the course
+- NATS - Used to setup messaging between apps in part 4
+- etcd - As I understood it, this is a part of kubernetes which is the topic of the course
+- Stash - Used outside of the course
+- Google Container Registry - Used in part 3 to store images. I have also used it at work
+- Rancher - Used it at work
+- Snyk - Used it at work
+- Prometheus - Used it for monitoring in parts 2 and 4
+- Grafana - Used it to view data in parts 2 and 4
+- Grafana Loki - Used it to view logs in part 2
+- nginx - Used it in personal projects and in DevOps with Docker 2021 course
+- Gradle - Used it at work
+- Helm - Used it to install charts to my clusters in parts 2 and 4
+- Argo - Used rollouts for canary rollouts in part 4
+- Flux - Used to GitOpsify the todo project in part 4
+- GitLab - Used it at work
+- Jenkins - Used it at work
+- GitHub actions - Used it in personal projects and in parts 3 and 4 of the course to setup CI/CD
+- Linkerd - Used it as a service mesh in part 5 to easily setup canary rollouts
