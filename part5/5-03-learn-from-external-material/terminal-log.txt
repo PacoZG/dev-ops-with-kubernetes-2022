@@ -1,0 +1,28 @@
+ 8692  kubectl apply -k github.com/fluxcd/flagger/kustomize/linkerd
+ 8693  kubectl -n linkerd rollout status deploy/flagger
+ 8694  kubectl create ns test && \\n  kubectl apply -f https://run.linkerd.io/flagger.yml
+ 8695  kubectl -n test rollout status deploy podinfo
+ 8696  kubectl -n test port-forward svc/frontend 8080
+ 8697  cat <<EOF | kubectl apply -f -\napiVersion: flagger.app/v1beta1\nkind: Canary\nmetadata:\n  name: podinfo\n  namespace: test\nspec:\n  targetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: podinfo\n  service:\n    port: 9898\n  analysis:\n    interval: 10s\n    threshold: 5\n    stepWeight: 10\n    maxWeight: 100\n    metrics:\n    - name: request-success-rate\n      thresholdRange:\n        min: 99\n      interval: 1m\n    - name: request-duration\n      thresholdRange:\n        max: 500\n      interval: 1m\nEOF
+ 8698  kubectl -n test get ev --watch
+ 8699  linkerd viz install | kubectl apply -f -
+ 8700  linkerd viz dashboard
+ 8701  kubectl -n test set image deployment/podinfo \\n  podinfod=quay.io/stefanprodan/podinfo:1.7.1
+ 8702  kubectl -n test get ev --watch
+ 8703  kubectl -n test set image deployment/podinfo \\n  podinfod=quay.io/stefanprodan/podinfo:1.7.0
+ 8704  kubectl -n test get ev --watch
+ 8705  watch kubectl -n test get canary
+ 8706  kubectl watch -n test get canary
+ 8707  kubectl --watch -n test get canary
+ 8708  kubectl get -n test --watch canary
+ 8709  kubectl -n test get trafficsplit podinfo -o yaml
+ 8710  kubectl -n test set image deployment/podinfo \\n  podinfod=quay.io/stefanprodan/podinfo:1.7.1
+ 8711  watch linkerd viz -n test stat deploy --from deploy/load
+ 8712  linkerd viz -n test stat deploy --from deploy/load
+ 8713  linkerd viz -n test stat deploy --from deploy/load --watch
+ 8714  linkerd viz -n test stat deploy --from deploy/load
+ 8715  linkerd viz dashboard
+ 8716  curl localhost:8080
+ 8717  kubectl -n test set image deployment/podinfo \\n  podinfod=quay.io/stefanprodan/podinfo:1.7.0
+ 8718  curl localhost:8080
+ 8719  kubectl delete -k github.com/fluxcd/flagger/kustomize/linkerd && \\n  kubectl delete ns test
